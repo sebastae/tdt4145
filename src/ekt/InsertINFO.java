@@ -1,6 +1,11 @@
 package ekt;
 import java.io.FileFilter;
+
 import java.sql.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Calendar;
 import java.util.Scanner;
 
 
@@ -29,7 +34,7 @@ public class InsertINFO extends DBConn {
 			return data+1;
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
-			System.out.println("Tom Tabel?");
+			//System.out.println("Tom Tabel?");
 			return 0;
 		}
 	}
@@ -51,24 +56,25 @@ public class InsertINFO extends DBConn {
 		}
 	}
 	
-	void regTrainingSession() {
+	void sessionLogin() {
 		try {
 			String harBrukerQ;
 			while (!((harBrukerQ = Svar("Har du en bruker?[J/N]").toUpperCase()).equals("J")|| harBrukerQ.equals("N"))) {}
 				
 			if (harBrukerQ.equals("J")){
 				int Svar = Integer.parseInt(Svar("Hva er ID nummeret ditt?"));
-				int fire = Integer.parseInt(Svar("Fire siffer"));
+				String fire = (Svar("Fire siffer"));
 				boolean isTrue = verifyPerson(Svar, fire);
 				if (isTrue) {
-					//
+					regTrainingSession(Svar);
 				}else {
-					System.out.println("Login Error");
+					System.out.println("Login Error: Wrong password");
 				}
 				
 				
 			}else {
-				regPerson();
+				int ID = regPerson();
+				System.out.println(Colors.ANSI_RED+"[ID: "+ID+" ] Husk ID-koden på brukeren din\033[0m"+Colors.ANSI_RESET);
 			}
 			
 		} catch (Exception e) {
@@ -76,39 +82,47 @@ public class InsertINFO extends DBConn {
 		}
 	}
 	
+	void regTrainingSession(int brukerID){
+		
+	}
 	
 	
 	
-	void regPerson() {
+	
+	int regPerson() {
 		try {
         	String navn = Svar("Hva heter du?");
         	int fire = Integer.parseInt(Svar("Fire siffer"));
 			PreparedStatement regApp = conn.prepareStatement("INSERT INTO Person VALUES ((?),(?),(?))");
-			regApp.setInt(1, lastObjectInTable("Person"));
+			int ID = lastObjectInTable("Person");
+			regApp.setInt(1, ID);
 			regApp.setString(2, navn);
 			regApp.setInt(3, fire);
 	        regApp.execute();
-	        System.out.println("Personen "+navn+" er satt inn i DB");
+	        return ID;
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			System.out.println("Det gikk ikke å sette innn personen");
+			return -1;
 		}
+		
 	}
 	
-	boolean verifyPerson(int ID, int kode) {
+	boolean verifyPerson(int ID, String kode) {
 		try {
-			int kode1 = 0;
+			String kode1 = "";
 			PreparedStatement verPer = conn.prepareStatement("SELECT * FROM Person WHERE PersonID=(?)");
 			verPer.setInt(1, (ID));
 			ResultSet r = verPer.executeQuery();
 	        while(r.next()) {
-	        	kode1 = r.getInt("fireSiffer");
+	        	kode1 = r.getString("fireSiffer");
 	        }
-	        System.out.println(kode1);
-	        return kode1==kode;
+	        //System.out.println(kode1.getClass()+" | "+kode.getClass());
+	        //System.out.println(kode1.equals(kode));
+	        return kode1.equals(kode);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
-			System.out.println("Det gikk ikke å sette innn personen");
+			System.out.println("Det gikk ikke å sette inn personen");
 			return false;
 		}
 	}
@@ -116,14 +130,26 @@ public class InsertINFO extends DBConn {
 	
 	void test() {
         try {
-        	String navn = Svar("Hva heter du?");
-        	int fire = Integer.parseInt(Svar("Fire siffer"));
-			PreparedStatement regApp = conn.prepareStatement("INSERT INTO Person VALUES ((?),(?),(?))");
-			regApp.setInt(1, lastObjectInTable("Person"));
-			regApp.setString(2, navn);
-			regApp.setInt(3, fire);
+        	float len = 22;
+        	System.out.println("[Registreing av økt]");
+			PreparedStatement regApp = conn.prepareStatement("INSERT INTO Person VALUES ((?),(?),(?),(?),(?),(?))");
+			regApp.setInt(1, lastObjectInTable("TrainingSession"));
+			regApp.setInt(2, 4);
+			int dag = Integer.parseInt(Svar("Dag"));
+			int måned = Integer.parseInt(Svar("Måned"));
+			int år = Integer.parseInt(Svar("År"))+1900;
+			@SuppressWarnings("deprecation")
+			
+			DateTimeFormatter formatter = DateTimeFormatter.BASIC_ISO_DATE;
+
+			String formattedDate = formatter.format(LocalDate.now());
+			System.out.println(formattedDate);
+			regApp.setDate(3, formattedDate);
+			regApp.setFloat(4, len);
+			regApp.setString(5, "FIT");
+			regApp.setString(6, "NICE");
 	        regApp.execute();
-	        System.out.println("Personen "+navn+" er satt inn i DB");
+	        System.out.println("Funket kanskje?");
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			System.out.println("Det gikk ikke å sette innn personen");
