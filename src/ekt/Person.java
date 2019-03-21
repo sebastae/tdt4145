@@ -51,4 +51,18 @@ public class Person {
         return null;
     }
 
+    public void save() throws SQLException {
+        ConnectionManager manager = ConnectionManager.globalManager;
+        ResultSet resultSet = manager.query("SELECT * FROM Person WHERE " + ID_COL_LABEL + " = (?)", new Integer(this.getID()));
+
+        String updateSQL = String.format("UPDATE Person SET %s = (?), %s = (?) WHERE %s = (?)", NAME_COL_LABEL, CODE_COL_LABEL, ID_COL_LABEL);
+        String insertSQL = String.format("INSERT INTO Person VALUES ((?),(?),(?))");
+        if(resultSet.first()){
+            manager.query(updateSQL, this.getName(), this.getCode(), this.getID());
+        } else {
+            manager.query(insertSQL, this.getID(), this.getName(), this.getCode());
+        }
+
+    }
+
 }
