@@ -10,7 +10,7 @@ import java.util.Scanner;
 public class Main {
 
     public static void main(String[] args) {
-    	InsertINFO test = new InsertINFO();
+    	/*InsertINFO test = new InsertINFO();
     	test.connect();
     	while (true) {
     		System.out.println("\nOption 1: Registrere et apparat");
@@ -24,6 +24,10 @@ public class Main {
     	    }else if(choice.equals("2")){
     	    	test.regTrainingSession();
     	    }
-    	}
+    	}*/
+
+    	Person p = Person.getFromDatabase(1);
+    	System.out.println("#" + p.getID() + ": " + p.getName() + " [" + p.getCode() + "]" );
+
     }
 }
